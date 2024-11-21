@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -42,21 +43,27 @@ public class PaginateLargeMapExample {
         long inicio = System.nanoTime();
 
         // Procesar las páginas en paralelo
-        IntStream.range(0, totalPages).parallel().forEach(page -> {
-            // Calcular límites de la página
-            int start = page * pageSize;
-            int end = Math.min(start + pageSize, largeMap.size());
 
-            // Extraer submapa (página actual)
-            Map<String, ConfigApp> currentPage = largeMap.entrySet().stream()
-                    .skip(start)
-                    .limit(pageSize)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        ForkJoinPool custonPool = new ForkJoinPool(10);
+        custonPool.submit(() -> {
+            IntStream.range(0, totalPages).parallel().forEach(page -> {
+                // Calcular límites de la página
+                int start = page * pageSize;
+                int end = Math.min(start + pageSize, largeMap.size());
 
-            // Procesar los datos de la página
+                // Extraer submapa (página actual)
+                Map<String, ConfigApp> currentPage = largeMap.entrySet().stream()
+                        .skip(start)
+                        .limit(pageSize)
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            processPage(currentPage, page);
-        });
+                // Procesar los datos de la página
+
+                processPage(currentPage, page);
+                System.out.println("Cantidad de registros procesados: " +currentPage.size());
+            });
+        }).join();
+
         long fin = System.nanoTime();
         long duracion = fin - inicio;
         double duracionEnSegundos = duracion / 1_000_000_000.0;

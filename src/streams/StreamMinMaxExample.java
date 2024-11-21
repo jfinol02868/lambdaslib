@@ -19,5 +19,8 @@ public class StreamMinMaxExample {
 
         min.ifPresent(System.out::println);
         max.ifPresent(System.out::println);
+
+        min.ifPresentOrElse(System.out::println, () -> System.out.println("No hay valor mínimo"));
+        max.ifPresentOrElse(System.out::println, () -> System.out.println("No hay valor máximo"));
     }
 }

@@ -17,7 +17,7 @@ public class ParallelMapFilterExample {
         );
 
         Map<Integer, String> filteredMap = map.entrySet().parallelStream()
-                .filter(entry -> entry.getKey() % 2 == 0) // Claves pares
+                .filter(entry -> entry.getKey() % 2 == 0)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         System.out.println(filteredMap); // Output: {2=Dos, 4=Cuatro}
